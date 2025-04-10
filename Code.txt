@@ -1,0 +1,188 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Tour {
+public:
+    string destination;
+    int duration;
+    double price;
+    Tour* next;
+
+    Tour(string dest, int dur, double prc) : destination(dest), duration(dur), price(prc), next(nullptr) {}
+};
+
+class TourList {
+private:
+    Tour* head;
+
+public:
+    TourList() : head(nullptr) {}
+
+    void addTour(const Tour& tour) {
+        Tour* newTour = new Tour(tour.destination, tour.duration, tour.price);
+
+        if (head == nullptr) {
+            head = newTour;
+        } else {
+            Tour* temp = head;
+            while (temp->next != nullptr) {
+                temp = temp->next;
+            }
+            temp->next = newTour;
+        }
+    }
+
+    void removeTour(const Tour& tour) {
+        if (head == nullptr) {
+            cout << "No tours available." << endl;
+            return;
+        }
+
+        Tour* current = head;
+        Tour* prev = nullptr;
+
+        while (current != nullptr) {
+            if (current->destination == tour.destination && current->duration == tour.duration && current->price == tour.price) {
+                if (prev == nullptr) {
+                    head = current->next;
+                } else {
+                    prev->next = current->next;
+                }
+                delete current;
+                cout << "Tour removed." << endl;
+                return;
+            }
+            prev = current;
+            current = current->next;
+        }
+
+        cout << "Tour not found." << endl;
+    }
+
+    void displayTours() const {
+        if (head == nullptr) {
+            cout << "No tours available." << endl;
+            return;
+        }
+
+        // Create a new sorted list based on price
+        Tour* sortedList = nullptr;
+        Tour* current = head;
+
+        while (current != nullptr) {
+            Tour* nextTour = current->next;
+
+            if (sortedList == nullptr || current->price < sortedList->price) {
+                current->next = sortedList;
+                sortedList = current;
+            } else {
+                Tour* temp = sortedList;
+                while (temp->next != nullptr && current->price >= temp->next->price) {
+                    temp = temp->next;
+                }
+                current->next = temp->next;
+                temp->next = current;
+            }
+
+            current = nextTour;
+        }
+
+        // Display the sorted tours
+        cout << "Available Tours (Sorted by Price):" << endl;
+        Tour* temp = sortedList;
+        while (temp != nullptr) {
+            cout << "Destination: " << temp->destination << endl;
+            cout << "Duration: " << temp->duration << " days" << endl;
+            cout << "Price: /-" << temp->price << endl;
+            cout << "----------------------" << endl;
+            temp = temp->next;
+        }
+
+        // Clean up the sorted list
+        current = sortedList;
+        while (current != nullptr) {
+            Tour* nextTour = current->next;
+            delete current;
+            current = nextTour;
+        }
+    }
+};
+
+class TourManager {
+private:
+    TourList tourList;
+
+public:
+    void addTour(const Tour& tour) {
+        tourList.addTour(tour);
+    }
+
+    void removeTour(const Tour& tour) {
+        tourList.removeTour(tour);
+    }
+
+    void displayTours() const {
+        tourList.displayTours();
+    }
+};
+
+int main() {
+    TourManager tourManager;
+    int choice;
+
+    while (true) {
+        cout << "Menu:\n";
+        cout << "1. Add Tour\n";
+        cout << "2. Remove Tour\n";
+        cout << "3. Display Tours\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                string destination;
+                int duration;
+                double price;
+                cout << "Enter destination: ";
+                cin.ignore();
+                getline(cin, destination);
+                cout << "Enter duration (in days): ";
+                cin >> duration;
+                cout << "Enter price: /-";
+                cin >> price;
+                Tour newTour(destination, duration, price);
+                tourManager.addTour(newTour);
+                cout << "Tour added.\n";
+                break;
+            }
+            case 2: {
+                string destination;
+                int duration;
+                double price;
+                cout << "Enter destination: ";
+                cin.ignore();
+                getline(cin, destination);
+                cout << "Enter duration (in days): ";
+                cin >> duration;
+                cout << "Enter price: /-";
+                cin >> price;
+                Tour tourToRemove(destination, duration, price);
+                tourManager.removeTour(tourToRemove);
+                break;
+            }
+            case 3:
+                tourManager.displayTours();
+                break;
+            case 4:
+                cout << "Exiting program.\n";
+                return 0;
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+
+        cout << endl;
+    }
+}
